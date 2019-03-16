@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="lib/vue.js"></script>
+</head>
+<body>
+    <div id="box">
+       <input type="text" v-model="mytext" @focus="showul(true)">
+       <button @click="handleClickSearch()">搜索</button>
+       <ul v-show="isShow">
+          <li v-for="data,index in historylist"><b @click="handleClickP($event)">{{data}}</b>
+            <span @click="handleClickDel(index)">×</span>
+          </li>
+       </ul>
+    </div>
+    <script>
+        var vm = new Vue({
+            el:'#box',
+            data:{
+                mytext:'',
+                historylist:[],
+                isShow:false
+            },
+            methods:{
+                handleClickSearch(){
+                  if(this.mytext!==''){
+                    if( localStorage.getItem('historylist')){
+                      var historylist = JSON.parse(localStorage.getItem('historylist'))
+                    }else{
+                      var historylist = []
+                    }
+
+                    if(historylist.indexOf(this.mytext)===-1){
+                      historylist.push(this.mytext)
+                    }else{
+                      historylist.splice(historylist.indexOf(this.mytext),1)
+                      historylist.push(this.mytext)
+                    }
+                    
+                    this.mytext =''
+
+                    this.historylist = (Array.from(new Set(historylist))).reverse()
+                    localStorage.setItem('historylist',JSON.stringify(historylist))
+
+                    if(this.historylist.length>10){
+                      this.historylist=this.historylist.slice(0,10)
+                    }
+                   
+                  }else{
+                    alert('不能为空')
+                  }
+                },
+                handleClickDel(index){
+                  var historylist = JSON.parse(localStorage.getItem('historylist'))
+                  historylist.splice(historylist.indexOf(this.historylist[index]),1)
+                  localStorage.setItem('historylist',JSON.stringify(historylist))
+                  this.historylist.splice(index,1)
+                  this.showul(false)
+                },  
+                showul(isShow){
+                  this.isShow = isShow
+                },
+                handleWindowClick(ev){
+                  // console.log(ev)
+                  if(ev.target===document.documentElement)//document.body
+                    this.showul(false)
+                },
+                handleClickP(ev){
+                  console.log(ev.target.innerHTML)
+                  this.mytext = ev.target.innerHTML
+                  this.historylist = (JSON.parse(localStorage.getItem('historylist'))).reverse()
+                  if(this.historylist.length>10){
+                    this.historylist=this.historylist.slice(0,10)
+                  }
+                }
+            },
+            computed:{
+              
+
+            },
+            mounted(){
+              this.historylist = (JSON.parse(localStorage.getItem('historylist'))).reverse()
+              if(this.historylist.length>10){
+                this.historylist=this.historylist.slice(0,10)
+              }
+              window.addEventListener("click",this.handleWindowClick,true)
+            }
+
+        })
+    </script>
+</body>
+</html>
